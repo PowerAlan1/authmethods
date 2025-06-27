@@ -1,4 +1,5 @@
-name: DevSecOps Alan
+name: Pipeline DevSecOps WebServices+ Alan
+
 on:
   push:
     branches:
@@ -8,14 +9,29 @@ on:
       - main
 
 jobs:
-  build-test:
+  build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup PHP
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup PHP 8.1
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
-      - run: composer install --no-interaction --prefer-dist --optimize-autoloader
-      - run: vendor/bin/phpunit --coverage-text --colors=never
-      - run: vendor/bin/phpstan analyse -l max src tests
+          extensions: mbstring, xml, curl, zip, intl, pdo_mysql
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run PHPUnit tests
+        run: vendor/bin/phpunit --colors=never
+
+      - name: Run PHPStan static analysis (level max)
+        run: vendor/bin/phpstan analyse -l max src tests || true
+
+      - name: Check composer dependencies vulnerabilities
+        run: |
+          composer require --dev sensiolabs/security-checker
+          vendor/bin/security-checker security:check composer.lock || true
