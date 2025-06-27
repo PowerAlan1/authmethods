@@ -1,0 +1,21 @@
+name: DevSecOps Alan
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      - run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - run: vendor/bin/phpunit --coverage-text --colors=never
+      - run: vendor/bin/phpstan analyse -l max src tests
