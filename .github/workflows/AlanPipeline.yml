@@ -32,6 +32,4 @@ jobs:
         run: vendor/bin/phpstan analyse -l max src tests || true
 
       - name: Check composer dependencies vulnerabilities
-        run: |
-          composer require --dev sensiolabs/security-checker
-          vendor/bin/security-checker security:check composer.lock || true
+        uses: EnricoMiotto/security-checker-action@v1
