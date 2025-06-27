@@ -2,11 +2,9 @@ name: Pipeline DevSecOps WebServices+ Alan
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build-and-test:
@@ -16,20 +14,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup PHP 8.1
+      - name: Setup PHP 8.2
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           extensions: mbstring, xml, curl, zip, intl, pdo_mysql
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Run PHPUnit tests
-        run: vendor/bin/phpunit --colors=never
+        run: vendor/bin/phpunit --colors=never --configuration phpunit.xml.dist
 
       - name: Run PHPStan static analysis (level max)
         run: vendor/bin/phpstan analyse -l max src tests || true
 
-      - name: Check composer dependencies vulnerabilities
-        uses: EnricoMiotto/security-checker-action@v1
+      - name: Run Composer Audit to check for vulnerabilities
+        run: composer audit --no-interaction
+
+
